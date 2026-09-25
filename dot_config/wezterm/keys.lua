@@ -121,7 +121,7 @@ local keys = {
     mods = 'CMD',
     action = act.SpawnCommandInNewTab {
       args = {
-        '/opt/homebrew/bin/nvim',
+        '/usr/bin/vim',
         wezterm.config_file,
       },
       cwd = wezterm.home_dir,
@@ -134,7 +134,7 @@ local keys = {
       args = {
         'zsh',
         '-c',
-        '/opt/homebrew/bin/nvim '
+        '/usr/bin/vim '
         .. wezterm.home_dir
         .. '/.zshrc && source '
         .. wezterm.home_dir

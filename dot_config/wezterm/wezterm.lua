@@ -75,8 +75,7 @@ config.tab_bar_at_bottom = false
 config.show_close_tab_button_in_tabs = false
 config.show_new_tab_button_in_tab_bar = false
 config.hide_tab_bar_if_only_one_tab = false
-config.window_decorations =
-'RESIZE|MACOS_FORCE_DISABLE_SHADOW'
+config.window_decorations = 'RESIZE|MACOS_FORCE_DISABLE_SHADOW'
 config.window_frame = {
   font = wezterm.font { family = 'Iosevka NF Light' },
   font_size = 16,
