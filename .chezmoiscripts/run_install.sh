@@ -4,7 +4,6 @@ set -euo pipefail
 info()  { echo "==> $*"; }
 check() { command -v "$1" &>/dev/null; }
 
-
 # Homebrew
 if ! check brew; then
   info "Installing Homebrew..."
@@ -19,6 +18,14 @@ brewfile="$HOME/.config/brew/brewfile"
 if [[ -f "$brewfile" ]]; then
   info "Installing packages..."
   brew bundle install --file="$brewfile"
+fi
+
+# Go environment (persisted in ~/.config/go/env)
+if check go; then
+  info "Configuring Go environment..."
+  go env -w GOSUMDB="off"
+  go env -w GOPRIVATE="gitlab.fbs-d.com"
+  go env -w GOPROXY="https://proxy.golang.org,direct"
 fi
 
 # WezTerm custom icon
@@ -50,6 +57,11 @@ fi
 if [[ ! -d "$plugins_dir/zsh-syntax-highlighting" ]]; then
   git clone https://github.com/zsh-users/zsh-syntax-highlighting \
     "$plugins_dir/zsh-syntax-highlighting"
+fi
+
+if [[ ! -d "$plugins_dir/fzf-tab" ]]; then
+  git clone --depth 1 https://github.com/Aloxaf/fzf-tab \
+    "$plugins_dir/fzf-tab"
 fi
 
 # Zsh custom theme
