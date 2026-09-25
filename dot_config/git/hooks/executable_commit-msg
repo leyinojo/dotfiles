@@ -1,0 +1,94 @@
+#!/bin/sh
+#
+# Global git hook: commit-msg
+# Validates commit message format and blocks commits to protected branches in work projects
+#
+
+COMMIT_MSG_FILE=$1
+
+# Function to check if current repo is a work project
+is_work_project() {
+    # Get repository root path
+    repo_path=$(git rev-parse --show-toplevel 2>/dev/null)
+    [ -z "$repo_path" ] && return 1
+    
+    # Get work directories from git config (fallback to environment variable)
+    work_dirs=$(git config --global --path --get hooks.workProjectsDirs 2>/dev/null)
+    [ -z "$work_dirs" ] && work_dirs="$WORK_PROJECTS_DIRS"
+    
+    # If no work directories configured, treat all projects as personal
+    [ -z "$work_dirs" ] && return 1
+    
+    # Check if repo path starts with any work directory
+    IFS=':'
+    for work_dir in $work_dirs; do
+        case "$repo_path" in
+            "$work_dir"*)
+                return 0
+                ;;
+        esac
+    done
+    return 1
+}
+
+# Get current branch
+branch=$(git branch --show-current 2>/dev/null)
+
+# For work projects, check protected branch restrictions
+if is_work_project; then
+    case "$branch" in
+        "master"|"main")
+            if [ "$ALLOW_MASTER_COMMIT" != "1" ]; then
+                echo "❌ ERROR: Direct commits to '$branch' branch are forbidden!"
+                echo "📝 Use: ALLOW_MASTER_COMMIT=1 git commit ... for emergency"
+                exit 1
+            else
+                echo "⚠️  WARNING: Emergency commit to protected branch"
+            fi
+            ;;
+    esac
+fi
+
+# Read first line of commit message
+msg=$(head -1 "$COMMIT_MSG_FILE")
+
+# Skip special commits
+echo "$msg" | grep -qE "^(Merge|Revert|Initial commit)" && exit 0
+
+# Validate message length based on context
+if is_work_project; then
+    # Extract task ID from branch for work projects
+    task_id=$(echo "$branch" | grep -oE '[A-Z]+-[0-9]+' | head -1)
+    
+    if [ -n "$task_id" ] && echo "$msg" | grep -qE "^$task_id: "; then
+        # For messages with task prefix, validate content after ": "
+        content=$(echo "$msg" | sed "s/^$task_id: //")
+        if [ ${#content} -lt 8 ]; then
+            echo "❌ ERROR: Commit message too short"
+            echo "📝 Current: $msg"
+            echo "✅ Required: $task_id: <message with at least 8 characters>"
+            echo ""
+            echo "Examples:"
+            echo "  ✅ $task_id: implement user authentication"
+            echo "  ✅ $task_id: fix memory leak in parser"
+            echo "  ❌ $task_id: fix bug (only 7 chars)"
+            exit 1
+        fi
+    else
+        # For messages without task prefix, validate entire message
+        if [ ${#msg} -lt 8 ]; then
+            echo "❌ ERROR: Commit message too short"
+            echo "📝 Current: $msg"
+            echo "✅ Required: message with at least 8 characters"
+            exit 1
+        fi
+    fi
+else
+    # For personal projects, always validate entire message
+    if [ ${#msg} -lt 8 ]; then
+        echo "❌ ERROR: Commit message too short"
+        echo "📝 Current: $msg"
+        echo "✅ Required: message with at least 8 characters"
+        exit 1
+    fi
+fi

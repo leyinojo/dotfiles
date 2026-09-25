@@ -1,0 +1,50 @@
+brew "awscli"
+brew "bat"
+brew "bitwarden-cli"
+brew "btop"
+brew "chezmoi"
+brew "curl"
+brew "docker"
+brew "docker-compose"
+brew "eza"
+brew "fd"
+brew "fileicon"
+brew "fzf"
+brew "git"
+brew "go"
+brew "go-task"
+brew "jq"
+brew "krew"
+brew "kubernetes-cli"
+brew "kubectx"
+brew "mole"
+brew "ollama"
+brew "opencode"
+brew "richgo"
+brew "vim"
+brew "wget"
+brew "zsh"
+
+cask "adguard", continue_on_failure: true
+cask "appcleaner", continue_on_failure: true
+cask "arc", continue_on_failure: true
+cask "boop", continue_on_failure: true
+cask "breaktimer", continue_on_failure: true
+cask "caffeine", continue_on_failure: true
+cask "docker", continue_on_failure: true
+cask "font-iosevka-nerd-font", continue_on_failure: true
+cask "iina", continue_on_failure: true
+cask "keka", continue_on_failure: true
+cask "kekaexternalhelper", continue_on_failure: true
+cask "lens", continue_on_failure: true
+cask "postman", continue_on_failure: true
+cask "raycast", continue_on_failure: true
+cask "rectangle", continue_on_failure: true
+cask "slack", continue_on_failure: true
+cask "telegram", continue_on_failure: true
+cask "transmission", continue_on_failure: true
+cask "wezterm@nightly", continue_on_failure: true
+cask "zoom", continue_on_failure: true
+
+krew "oidc-login"
+

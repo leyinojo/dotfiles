@@ -1,0 +1,57 @@
+#!/bin/sh
+#
+# Global git hook: prepare-commit-msg
+# Automatically adds task ID prefix to commit messages in work projects
+#
+
+COMMIT_MSG_FILE=$1
+COMMIT_SOURCE=$2
+
+# Skip merge commits
+[ "$COMMIT_SOURCE" = "merge" ] && exit 0
+
+# Function to check if current repo is a work project
+is_work_project() {
+    # Get repository root path
+    repo_path=$(git rev-parse --show-toplevel 2>/dev/null)
+    [ -z "$repo_path" ] && return 1
+    
+    # Get work directories from git config (fallback to environment variable)
+    work_dirs=$(git config --global --path --get hooks.workProjectsDirs 2>/dev/null)
+    [ -z "$work_dirs" ] && work_dirs="$WORK_PROJECTS_DIRS"
+    
+    # If no work directories configured, treat all projects as personal
+    [ -z "$work_dirs" ] && return 1
+    
+    # Check if repo path starts with any work directory
+    IFS=':'
+    for work_dir in $work_dirs; do
+        case "$repo_path" in
+            "$work_dir"*)
+                return 0
+                ;;
+        esac
+    done
+    return 1
+}
+
+# Only process work projects
+is_work_project || exit 0
+
+# Get current branch and extract task ID
+branch=$(git branch --show-current 2>/dev/null)
+[ -z "$branch" ] && exit 0
+
+task_id=$(echo "$branch" | grep -oE '[A-Z]+-[0-9]+' | head -1)
+[ -z "$task_id" ] && exit 0
+
+# Read current commit message
+msg=$(cat "$COMMIT_MSG_FILE")
+
+# Skip special commits
+echo "$msg" | grep -qE "^(Merge|Revert|Initial commit)" && exit 0
+
+# Add prefix if not already present
+if ! echo "$msg" | grep -qE "^$task_id:"; then
+    echo "$task_id: $msg" > "$COMMIT_MSG_FILE"
+fi
